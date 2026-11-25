@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="uz" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ISKANDAR BUILDING — Premium Ko'chmas Mulk Platformasi</title>
+  <meta name="description" content="Orzuingizdagi uy — biz bilan bir qadam yaqinroq. O'zbekiston bo'ylab premium ko'chmas mulk platformasi." />
+
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet.js CSS (OpenStreetMap) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <!-- Demo Notice Banner -->
+  <div class="demo-banner" id="demoBanner">
+    <span><i data-lucide="info"></i> <span data-i18n="demo_notice">Frontend Demo Rejim: Ma'lumotlar brauzer xotirasida (LocalStorage) saqlanadi. Haqiqiy to'lov va SMS tasdiqlash uchun backend API talab etiladi.</span></span>
+    <button id="closeBannerBtn" aria-label="Yopish"><i data-lucide="x"></i></button>
+  </div>
+
+  <!-- Sticky Navbar -->
+  <header class="navbar" id="navbar">
+    <div class="container nav-container">
+      <!-- Left: Logo -->
+      <a href="#home" class="brand-logo" data-nav="home">
+        <div class="logo-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 21h18"/>
+            <path d="M5 21V7l8-4v18"/>
+            <path d="M19 21V11l-6-4"/>
+            <path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <span class="brand-title">ISKANDAR</span>
+          <span class="brand-sub">BUILDING</span>
+        </div>
+      </a>
+
+      <!-- Center: Navigation Links -->
+      <nav class="nav-links" id="navLinks">
+        <a href="#home" class="nav-link active" data-nav="home" data-i18n="nav_home">Bosh sahifa</a>
+        <a href="#listings" class="nav-link" data-nav="sale" data-i18n="nav_sale">Sotuv</a>
+        <a href="#listings" class="nav-link" data-nav="rent" data-i18n="nav_rent">Ijara</a>
+        <a href="#listings" class="nav-link" data-nav="new" data-i18n="nav_new">Yangi uylar</a>
+        <a href="#listings" class="nav-link" data-nav="commercial" data-i18n="nav_commercial">Tijorat</a>
+        <a href="#realtors" class="nav-link" data-nav="realtors" data-i18n="nav_realtors">Rieltorlar</a>
+      </nav>
+
+      <!-- Right: Actions -->
+      <div class="nav-actions">
+        <!-- Language Selector -->
+        <div class="lang-switcher">
+          <button class="icon-btn" id="langBtn" aria-label="Tilni tanlash">
+            <i data-lucide="globe"></i>
+            <span id="currentLangLabel">UZ</span>
+          </button>
+          <div class="dropdown-menu" id="langDropdown">
+            <button data-lang="uz" class="active">O'zbekcha</button>
+            <button data-lang="ru">Русский</button>
+            <button data-lang="en">English</button>
+          </div>
+        </div>
+
+        <!-- Theme Toggle -->
+        <button class="icon-btn" id="themeToggle" aria-label="Mavzuni o'zgartirish">
+          <i data-lucide="moon" id="themeIcon"></i>
+        </button>
+
+        <!-- Search Focus -->
+        <button class="icon-btn hide-mobile" id="quickSearchBtn" aria-label="Qidiruv">
+          <i data-lucide="search"></i>
+        </button>
+
+        <!-- Favorites -->
+        <button class="icon-btn badge-btn" id="favoritesBtn" aria-label="Sevimlilar">
+          <i data-lucide="heart"></i>
+          <span class="badge" id="favCount">0</span>
+        </button>
+
+        <!-- Compare -->
+        <button class="icon-btn badge-btn" id="compareBtn" aria-label="Taqqoslash">
+          <i data-lucide="arrow-left-right"></i>
+          <span class="badge" id="compareCount">0</span>
+        </button>
+
+        <!-- Auth -->
+        <button class="btn btn-outline btn-sm hide-tablet" id="authBtn">
+          <i data-lucide="user"></i>
+          <span id="authBtnText" data-i18n="nav_login">Kirish</span>
+        </button>
+
+        <!-- Post Ad -->
+        <button class="btn btn-primary btn-sm" id="addListingBtn">
+          <i data-lucide="plus-circle"></i>
+          <span data-i18n="nav_post">E'lon berish</span>
+        </button>
+
+        <!-- Hamburger -->
+        <button class="icon-btn mobile-menu-btn" id="mobileMenuBtn" aria-label="Menyu">
+          <i data-lucide="menu"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-drawer" id="mobileDrawer">
+    <div class="mobile-drawer-header">
+      <span class="brand-title">ISKANDAR BUILDING</span>
+      <button class="icon-btn" id="closeMobileDrawer"><i data-lucide="x"></i></button>
+    </div>
+    <div class="mobile-drawer-links">
+      <a href="#home" data-nav="home" data-i18n="nav_home">Bosh sahifa</a>
+      <a href="#listings" data-nav="sale" data-i18n="nav_sale">Sotuv</a>
+      <a href="#listings" data-nav="rent" data-i18n="nav_rent">Ijara</a>
+      <a href="#listings" data-nav="new" data-i18n="nav_new">Yangi uylar</a>
+      <a href="#listings" data-nav="commercial" data-i18n="nav_commercial">Tijorat</a>
+      <a href="#realtors" data-nav="realtors" data-i18n="nav_realtors">Rieltorlar</a>
+      <hr />
+      <button class="btn btn-outline w-full" id="mobileAuthBtn"><i data-lucide="user"></i> <span data-i18n="nav_login">Kirish</span></button>
+      <button class="btn btn-primary w-full" id="mobileAddBtn"><i data-lucide="plus-circle"></i> <span data-i18n="nav_post">E'lon berish</span></button>
+    </div>
+  </div>
+
+  <main id="home">
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-bg">
+        <img src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1920&q=80" alt="Hashamatli Villa" />
+        <div class="hero-overlay"></div>
+      </div>
+
+      <div class="container hero-content">
+        <div class="hero-badge reveal">
+          <span class="pulse-dot"></span>
+          <span>ISKANDAR BUILDING • O'ZBEKISTON #1 MARKETPLACE</span>
+        </div>
+        <h1 class="hero-title reveal" data-i18n="hero_title">Orzuingizdagi uyni toping</h1>
+        <p class="hero-subtitle reveal" data-i18n="hero_subtitle">O‘zbekiston bo‘ylab minglab ko‘chmas mulk imkoniyatlari sizni kutmoqda. Orzuingizdagi uy — biz bilan bir qadam yaqinroq.</p>
+
+        <!-- Hero Search Panel -->
+        <div class="hero-search-card glass reveal">
+          <div class="search-tabs">
+            <button class="search-tab active" data-deal="all" data-i18n="tab_all">Barchasi</button>
+            <button class="search-tab" data-deal="Sotuv" data-i18n="tab_sale">Sotib olish</button>
+            <button class="search-tab" data-deal="Ijara" data-i18n="tab_rent">Ijaraga olish</button>
+          </div>
+
+          <form id="heroSearchForm" class="hero-search-grid">
+            <div class="form-group">
+              <label data-i18n="lbl_city">Shahar</label>
+              <select id="heroCity">
+                <option value="">Barcha shaharlar</option>
+                <option value="Toshkent">Toshkent</option>
+                <option value="Samarqand">Samarqand</option>
+                <option value="Buxoro">Buxoro</option>
+                <option value="Andijon">Andijon</option>
+                <option value="Namangan">Namangan</option>
+                <option value="Farg‘ona">Farg‘ona</option>
+                <option value="Nukus">Nukus</option>
+                <option value="Qarshi">Qarshi</option>
+                <option value="Termiz">Termiz</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label data-i18n="lbl_district">Tuman</label>
+              <select id="heroDistrict">
+                <option value="">Barcha tumanlar</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label data-i18n="lbl_type">Uy turi</label>
+              <select id="heroCategory">
+                <option value="">Barcha turlar</option>
+                <option value="Kvartira">Kvartira</option>
+                <option value="Hovli">Hovli</option>
+                <option value="Villa">Villa</option>
+                <option value="Kottej">Kottej</option>
+                <option value="Ofis">Ofis</option>
+                <option value="Tijorat binosi">Tijorat binosi</option>
+                <option value="Yer uchastkasi">Yer uchastkasi</option>
+                <option value="Yangi qurilgan uylar">Yangi qurilgan uylar</option>
+                <option value="Premium uylar">Premium uylar</option>
+                <option value="Ijaraga beriladigan uylar">Ijaraga beriladigan uylar</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label data-i18n="lbl_rooms">Xonalar soni</label>
+              <select id="heroRooms">
+                <option value="">Istalgan</option>
+                <option value="1">1 xona</option>
+                <option value="2">2 xona</option>
+                <option value="3">3 xona</option>
+                <option value="4">4 xona</option>
+                <option value="5">5+ xona</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label data-i18n="lbl_min_price">Minimal narx ($)</label>
+              <input type="number" id="heroMinPrice" placeholder="Masalan: 30000" min="0" />
+            </div>
+
+            <div class="form-group">
+              <label data-i18n="lbl_max_price">Maksimal narx ($)</label>
+              <input type="number" id="heroMaxPrice" placeholder="Masalan: 500000" min="0" />
+            </div>
+
+            <button type="submit" class="btn btn-primary search-submit-btn">
+              <i data-lucide="search"></i>
+              <span data-i18n="btn_search">QIDIRISH</span>
+            </button>
+          </form>
+
+          <!-- Search Suggestions -->
+          <div class="quick-tags">
+            <span>Mashhur qidiruvlar:</span>
+            <button type="button" class="tag-chip" data-quick-city="Toshkent" data-quick-district="Yunusobod">Yunusobod kvartira</button>
+            <button type="button" class="tag-chip" data-quick-cat="Villa">Hashamatli Villalar</button>
+            <button type="button" class="tag-chip" data-quick-cat="Yangi qurilgan uylar">Yangi qurilgan uylar</button>
+            <button type="button" class="tag-chip" data-quick-city="Samarqand">Samarqand uylari</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 Categories Section -->
+    <section class="section categories-section">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title" data-i18n="cat_title">Ko'chmas mulk kategoriyalari</h2>
+            <p class="section-subtitle">O'zingizga mos mulk turini tanlang</p>
+          </div>
+          <button class="btn btn-outline btn-sm" id="resetCatBtn">Barchasini ko'rsatish</button>
+        </div>
+
+        <div class="categories-grid" id="categoriesGrid">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Marketplace Section (Filters + Listings + Map) -->
+    <section class="section marketplace-section" id="listings">
+      <div class="container">
+        <!-- Toolbar -->
+        <div class="marketplace-toolbar">
+          <div class="results-info">
+            <h2 class="section-title" data-i18n="listings_title">Barcha e'lonlar</h2>
+            <span class="results-count" id="resultsCountBadge">30 ta natija</span>
+          </div>
+
+          <div class="toolbar-controls">
+            <!-- Keyword Search with Debounce -->
+            <div class="search-input-box">
+              <i data-lucide="search"></i>
+              <input type="text" id="keywordSearch" placeholder="Manzil, nom yoki tuman bo'yicha qidirish..." />
+            </div>
+
+            <!-- Sort -->
+            <select id="sortSelect" class="sort-select" aria-label="Saralash">
+              <option value="recommended">Tavsiya etilgan</option>
+              <option value="newest">Eng yangi</option>
+              <option value="price_asc">Eng arzon</option>
+              <option value="price_desc">Eng qimmat</option>
+              <option value="area_desc">Eng katta maydon</option>
+              <option value="rooms_desc">Eng ko‘p xonali</option>
+            </select>
+
+            <!-- View Switcher -->
+            <div class="view-toggle">
+              <button class="view-btn active" id="viewGridBtn" title="Ro'yxat ko'rinishi">
+                <i data-lucide="layout-grid"></i>
+                <span>Ro'yxat</span>
+              </button>
+              <button class="view-btn" id="viewMapBtn" title="Xarita ko'rinishi">
+                <i data-lucide="map"></i>
+                <span>Xarita</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="marketplace-layout">
+          <!-- Left Sidebar: Advanced Filters -->
+          <aside class="filter-sidebar" id="filterSidebar">
+            <div class="filter-header">
+              <h3><i data-lucide="sliders-horizontal"></i> <span data-i18n="filter_title">Mukammal filtr</span></h3>
+              <button type="button" class="text-btn" id="clearFiltersBtn" data-i18n="filter_clear">Tozalash</button>
+            </div>
+
+            <div class="filter-body">
+              <div class="filter-group">
+                <label>Bitim turi</label>
+                <select id="filterDeal">
+                  <option value="">Barchasi (Sotuv / Ijara)</option>
+                  <option value="Sotuv">Sotuv</option>
+                  <option value="Ijara">Ijara</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label>Shahar</label>
+                <select id="filterCity">
+                  <option value="">Barcha shaharlar</option>
+                  <option value="Toshkent">Toshkent</option>
+                  <option value="Samarqand">Samarqand</option>
+                  <option value="Buxoro">Buxoro</option>
+                  <option value="Andijon">Andijon</option>
+                  <option value="Namangan">Namangan</option>
+                  <option value="Farg‘ona">Farg‘ona</option>
+                  <option value="Nukus">Nukus</option>
+                  <option value="Qarshi">Qarshi</option>
+                  <option value="Termiz">Termiz</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label>Tuman</label>
+                <select id="filterDistrict">
+                  <option value="">Barcha tumanlar</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label>Kategoriya</label>
+                <select id="filterCategory">
+                  <option value="">Barcha kategoriyalar</option>
+                  <option value="Kvartira">Kvartira</option>
+                  <option value="Hovli">Hovli</option>
+                  <option value="Villa">Villa</option>
+                  <option value="Kottej">Kottej</option>
+                  <option value="Ofis">Ofis</option>
+                  <option value="Tijorat binosi">Tijorat binosi</option>
+                  <option value="Yer uchastkasi">Yer uchastkasi</option>
+                  <option value="Yangi qurilgan uylar">Yangi qurilgan uylar</option>
+                  <option value="Premium uylar">Premium uylar</option>
+                  <option value="Ijaraga beriladigan uylar">Ijaraga beriladigan uylar</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label>Xonalar soni</label>
+                <div class="room-pills" id="filterRoomPills">
+                  <button type="button" class="pill active" data-room="">Barchasi</button>
+                  <button type="button" class="pill" data-room="1">1</button>
+                  <button type="button" class="pill" data-room="2">2</button>
+                  <button type="button" class="pill" data-room="3">3</button>
+                  <button type="button" class="pill" data-room="4">4</button>
+                  <button type="button" class="pill" data-room="5">5+</button>
+                </div>
+              </div>
+
+              <div class="filter-group">
+                <label>Narx oralig'i ($)</label>
+                <div class="range-inputs">
+                  <input type="number" id="filterMinPrice" placeholder="Dan" min="0" />
+                  <span>—</span>
+                  <input type="number" id="filterMaxPrice" placeholder="Gacha" min="0" />
+                </div>
+              </div>
+
+              <div class="filter-group">
+                <label>Maydon oralig'i (m²)</label>
+                <div class="range-inputs">
+                  <input type="number" id="filterMinArea" placeholder="Min m²" min="0" />
+                  <span>—</span>
+                  <input type="number" id="filterMaxArea" placeholder="Max m²" min="0" />
+                </div>
+              </div>
+
+              <div class="filter-group">
+                <label>Qavat</label>
+                <input type="number" id="filterFloor" placeholder="Masalan: 3" min="1" max="50" />
+              </div>
+
+              <div class="filter-checkboxes">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="filterIsNew" />
+                  <span>Faqat yangi uylar (Novostroyka)</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" id="filterRenovated" />
+                  <span>Evro ta'mirlangan uylar</span>
+                </label>
+              </div>
+            </div>
+          </aside>
+
+          <!-- Right Content: Listings Grid & Interactive Map -->
+          <div class="marketplace-content">
+            <!-- Map Container (Toggleable or Split) -->
+            <div class="map-wrapper hidden" id="mapWrapper">
+              <div id="propertyMap"></div>
+            </div>
+
+            <!-- Skeleton Loader -->
+            <div class="listings-grid hidden" id="skeletonGrid">
+              <div class="skeleton-card"></div>
+              <div class="skeleton-card"></div>
+              <div class="skeleton-card"></div>
+              <div class="skeleton-card"></div>
+              <div class="skeleton-card"></div>
+              <div class="skeleton-card"></div>
+            </div>
+
+            <!-- Listings Grid -->
+            <div class="listings-grid" id="listingsGrid"></div>
+
+            <!-- Empty State -->
+            <div class="empty-state hidden" id="emptyState">
+              <div class="empty-icon"><i data-lucide="search-x"></i></div>
+              <h3>Hech qanday e'lon topilmadi</h3>
+              <p>Qidiruv parametrlarini o'zgartirib ko'ring yoki barcha filtrlarni tozalang.</p>
+              <button class="btn btn-primary" id="emptyResetBtn">Filtrlarni tozalash</button>
+            </div>
+
+            <!-- Pagination & Load More -->
+            <div class="pagination-wrapper" id="paginationWrapper">
+              <button class="btn btn-outline" id="loadMoreBtn">Yana yuklash</button>
+              <div class="pagination-numbers" id="paginationNumbers"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recently Viewed Section -->
+    <section class="section recently-viewed-section hidden" id="recentlyViewedSection">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Yaqinda ko'rilgan uylar</h2>
+            <p class="section-subtitle">Siz qiziqish bildirgan oxirgi e'lonlar</p>
+          </div>
+          <button class="text-btn" id="clearHistoryBtn">Tarixni tozalash</button>
+        </div>
+        <div class="listings-grid compact-grid" id="recentlyViewedGrid"></div>
+      </div>
+    </section>
+
+    <!-- Realtors Section -->
+    <section class="section realtors-section" id="realtors">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title" data-i18n="realtors_title">Top Rieltorlarimiz</h2>
+            <p class="section-subtitle">Tajribali mutaxassislar sizga eng yaxshi takliflarni topishda yordam beradi</p>
+          </div>
+        </div>
+        <div class="realtors-grid" id="realtorsGrid"></div>
+      </div>
+    </section>
+
+    <!-- Consultation / Contact Section -->
+    <section class="section contact-section" id="contact">
+      <div class="container">
+        <div class="contact-card glass">
+          <div class="contact-info">
+            <span class="badge-pill">BEPUL KONSULTATSIYA</span>
+            <h2>Orzuingizdagi uyni topishda yordam beramiz</h2>
+            <p>Mutaxassislarimiz sizning byudjetingiz va talablaringizga mos eng sara ko'chmas mulk variantlarini 15 daqiqa ichida saralab berishadi.</p>
+            <div class="contact-features">
+              <div class="c-feat"><i data-lucide="shield-check"></i> <span>100% yuridik tekshirilgan hujjatlar</span></div>
+              <div class="c-feat"><i data-lucide="percent"></i> <span>Qulay ipoteka va bo'lib to'lash imkoniyatlari</span></div>
+              <div class="c-feat"><i data-lucide="phone-call"></i> <span>+998 (71) 200-88-99 • 24/7 Qo'llab-quvvatlash</span></div>
+            </div>
+          </div>
+
+          <form class="contact-form" id="consultationForm">
+            <div class="form-group">
+              <label for="consultName">Ismingiz *</label>
+              <input type="text" id="consultName" placeholder="Masalan: Sardor Karimov" required />
+            </div>
+            <div class="form-group">
+              <label for="consultPhone">Telefon raqamingiz *</label>
+              <input type="tel" id="consultPhone" placeholder="+998 90 123 45 67" required />
+            </div>
+            <div class="form-group">
+              <label for="consultMessage">Xabaringiz *</label>
+              <textarea id="consultMessage" rows="3" placeholder="Qanday uy izlayapsiz? (Xonalar soni, tuman, byudjet...)" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary w-full">
+              <i data-lucide="send"></i>
+              <span>So'rov yuborish</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Premium Footer -->
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a href="#home" class="brand-logo">
+          <div class="logo-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/>
+            </svg>
+          </div>
+          <div class="logo-text">
+            <span class="brand-title">ISKANDAR</span>
+            <span class="brand-sub">BUILDING</span>
+          </div>
+        </a>
+        <p class="footer-slogan">"Orzuingizdagi uy — biz bilan bir qadam yaqinroq."</p>
+        <p class="footer-desc">O'zbekistonning zamonaviy va ishonchli ko'chmas mulk ekotizimi. Kvartiralar, hashamatli villalar va tijorat binolari bir joyda.</p>
+        <div class="social-links">
+          <a href="https://t.me" target="_blank" rel="noopener" aria-label="Telegram"><i data-lucide="send"></i></a>
+          <a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram"><i data-lucide="instagram"></i></a>
+          <a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook"><i data-lucide="facebook"></i></a>
+          <a href="https://youtube.com" target="_blank" rel="noopener" aria-label="YouTube"><i data-lucide="youtube"></i></a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Bo'limlar</h4>
+        <ul>
+          <li><a href="#contact">Biz haqimizda</a></li>
+          <li><a href="#listings" data-nav="sale">Sotuv</a></li>
+          <li><a href="#listings" data-nav="rent">Ijara</a></li>
+          <li><a href="#listings" data-nav="new">Yangi uylar</a></li>
+          <li><a href="#realtors">Rieltorlar</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Ma'lumotlar</h4>
+        <ul>
+          <li><a href="#contact">Aloqa</a></li>
+          <li><a href="#faqModal" id="openFaqBtn">Ko'p beriladigan savollar (FAQ)</a></li>
+          <li><a href="#privacyModal" id="openPrivacyBtn">Maxfiylik siyosati</a></li>
+          <li><a href="#addListing" id="footerAddBtn">E'lon joylashtirish</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Bog'lanish</h4>
+        <ul class="contact-list">
+          <li><i data-lucide="map-pin"></i> Toshkent sh., Yunusobod tumani, Amir Temur shoh ko'chasi, 108</li>
+          <li><i data-lucide="phone"></i> +998 (71) 200-88-99</li>
+          <li><i data-lucide="mail"></i> info@iskandarbuilding.uz</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="container footer-bottom-inner">
+        <p>© 2026 ISKANDAR BUILDING. Barcha huquqlar himoyalangan.</p>
+        <p class="demo-footnote">Frontend Demo Platforma • Real tranzaksiyalar uchun backend integratsiyasi talab etiladi.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Back to Top Button -->
+  <button class="back-to-top" id="backToTopBtn" aria-label="Yuqoriga qaytish">
+    <i data-lucide="arrow-up"></i>
+  </button>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- 1. Property Details Modal -->
+  <div class="modal-backdrop" id="propertyModal">
+    <div class="modal-dialog modal-xl">
+      <button class="modal-close" data-close-modal="propertyModal"><i data-lucide="x"></i></button>
+      <div class="modal-body" id="propertyModalBody"></div>
+    </div>
+  </div>
+
+  <!-- 2. Lightbox Modal -->
+  <div class="modal-backdrop lightbox-backdrop" id="lightboxModal">
+    <button class="modal-close light" data-close-modal="lightboxModal"><i data-lucide="x"></i></button>
+    <button class="lightbox-nav prev" id="lightboxPrev"><i data-lucide="chevron-left"></i></button>
+    <div class="lightbox-content">
+      <img id="lightboxImg" src="" alt="Katta rasm" />
+      <div class="lightbox-caption" id="lightboxCaption"></div>
+    </div>
+    <button class="lightbox-nav next" id="lightboxNext"><i data-lucide="chevron-right"></i></button>
+  </div>
+
+  <!-- 3. Favorites Modal -->
+  <div class="modal-backdrop" id="favoritesModal">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-header">
+        <h3><i data-lucide="heart"></i> Sevimli e'lonlar</h3>
+        <button class="modal-close static" data-close-modal="favoritesModal"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body" id="favoritesModalBody"></div>
+    </div>
+  </div>
+
+  <!-- 4. Compare Modal -->
+  <div class="modal-backdrop" id="compareModal">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-header">
+        <h3><i data-lucide="arrow-left-right"></i> Uylarni taqqoslash</h3>
+        <div>
+          <button class="btn btn-outline btn-sm" id="clearCompareBtn">Barchasini tozalash</button>
+          <button class="modal-close static" data-close-modal="compareModal"><i data-lucide="x"></i></button>
+        </div>
+      </div>
+      <div class="modal-body" id="compareModalBody"></div>
+    </div>
+  </div>
+
+  <!-- 5. Add Listing Modal -->
+  <div class="modal-backdrop" id="addListingModal">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-header">
+        <h3><i data-lucide="plus-circle"></i> Yangi e'lon joylashtirish</h3>
+        <button class="modal-close static" data-close-modal="addListingModal"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="addListingForm" class="add-listing-form">
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label>E'lon sarlavhasi *</label>
+              <input type="text" id="newTitle" placeholder="Masalan: Yunusobodda 3 xonali yangi kvartira" required />
+            </div>
+            <div class="form-group">
+              <label>Bitim turi *</label>
+              <select id="newDeal" required>
+                <option value="Sotuv">Sotuv</option>
+                <option value="Ijara">Ijara</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Uy turi *</label>
+              <select id="newCategory" required>
+                <option value="Kvartira">Kvartira</option>
+                <option value="Hovli">Hovli</option>
+                <option value="Villa">Villa</option>
+                <option value="Kottej">Kottej</option>
+                <option value="Ofis">Ofis</option>
+                <option value="Tijorat binosi">Tijorat binosi</option>
+                <option value="Yer uchastkasi">Yer uchastkasi</option>
+                <option value="Yangi qurilgan uylar">Yangi qurilgan uylar</option>
+                <option value="Premium uylar">Premium uylar</option>
+                <option value="Ijaraga beriladigan uylar">Ijaraga beriladigan uylar</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Narx ($) *</label>
+              <input type="number" id="newPrice" placeholder="Masalan: 85000" min="1" required />
+            </div>
+            <div class="form-group">
+              <label>Shahar *</label>
+              <select id="newCity" required>
+                <option value="Toshkent">Toshkent</option>
+                <option value="Samarqand">Samarqand</option>
+                <option value="Buxoro">Buxoro</option>
+                <option value="Andijon">Andijon</option>
+                <option value="Namangan">Namangan</option>
+                <option value="Farg‘ona">Farg‘ona</option>
+                <option value="Nukus">Nukus</option>
+                <option value="Qarshi">Qarshi</option>
+                <option value="Termiz">Termiz</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Tuman *</label>
+              <select id="newDistrict" required></select>
+            </div>
+            <div class="form-group">
+              <label>Xonalar soni *</label>
+              <input type="number" id="newRooms" min="1" max="20" value="3" required />
+            </div>
+            <div class="form-group">
+              <label>Maydon (m²) *</label>
+              <input type="number" id="newArea" min="10" max="10000" value="85" required />
+            </div>
+            <div class="form-group">
+              <label>Qavat *</label>
+              <input type="number" id="newFloor" min="1" max="50" value="4" required />
+            </div>
+            <div class="form-group">
+              <label>Aloqa telefoni *</label>
+              <input type="tel" id="newPhone" placeholder="+998 90 123 45 67" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>To'liq manzil *</label>
+            <input type="text" id="newAddress" placeholder="Ko'cha nomi, uy raqami, mo'ljal..." required />
+          </div>
+
+          <div class="form-group">
+            <label>Uy tavsifi *</label>
+            <textarea id="newDescription" rows="3" placeholder="Uyning holati, ta'miri, atrofidagi infratuzilma haqida batafsil yozing..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Rasmlar yuklash (bir nechta tanlash mumkin)</label>
+            <input type="file" id="newImages" accept="image/*" multiple class="file-input" />
+            <div class="image-preview-grid" id="imagePreviewGrid"></div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-full">E'lonni nashr qilish</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Auth Modal (Login / Register Demo) -->
+  <div class="modal-backdrop" id="authModal">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-header">
+        <h3 id="authModalTitle">Tizimga kirish</h3>
+        <button class="modal-close static" data-close-modal="authModal"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-auth-mode="login">Kirish</button>
+          <button class="auth-tab" data-auth-mode="register">Ro'yxatdan o'tish</button>
+        </div>
+
+        <form id="authForm">
+          <div class="form-group" id="authNameGroup" style="display: none;">
+            <label>Ismingiz *</label>
+            <input type="text" id="authName" placeholder="Ism va familiya" />
+          </div>
+          <div class="form-group">
+            <label>Telefon yoki Email *</label>
+            <input type="text" id="authContact" placeholder="+998 90 123 45 67 yoki email" required />
+          </div>
+          <div class="form-group">
+            <label>Parol *</label>
+            <input type="password" id="authPassword" placeholder="Kamida 6 ta belgi" minlength="6" required />
+          </div>
+          <p class="auth-demo-note">Eslatma: Bu frontend demo rejim. Haqiqiy autentifikatsiya uchun backend server talab qilinadi.</p>
+          <button type="submit" class="btn btn-primary w-full" id="authSubmitBtn">Kirish</button>
+        </form>
+
+        <div id="userProfileBox" class="hidden user-profile-box">
+          <div class="user-avatar"><i data-lucide="user-check"></i></div>
+          <h4 id="loggedUserName">Foydalanuvchi</h4>
+          <p id="loggedUserContact"></p>
+          <button class="btn btn-outline w-full" id="logoutBtn">Tizimdan chiqish</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Realtor Profile Modal -->
+  <div class="modal-backdrop" id="realtorModal">
+    <div class="modal-dialog modal-md">
+      <button class="modal-close" data-close-modal="realtorModal"><i data-lucide="x"></i></button>
+      <div class="modal-body" id="realtorModalBody"></div>
+    </div>
+  </div>
+
+  <!-- 8. Info Modal (FAQ / Privacy) -->
+  <div class="modal-backdrop" id="infoModal">
+    <div class="modal-dialog modal-md">
+      <div class="modal-header">
+        <h3 id="infoModalTitle">Ma'lumot</h3>
+        <button class="modal-close static" data-close-modal="infoModal"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body" id="infoModalBody"></div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="./app.js"></script>
+</body>
+</html>
